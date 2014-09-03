@@ -1,8 +1,11 @@
 package demo;
 
-public class BlockStone extends Block {
+import engine.Block;
+import engine.Bounds;
 
-	public BlockStone(Bounds bounds) {
-		super(GameObject.ID_BLOCK_STONE, bounds);
-	}
+public class BlockStone extends Block {
+    
+    public BlockStone(Bounds bounds) {
+	super(bounds, true);
+    }
 }

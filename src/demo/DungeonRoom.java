@@ -3,6 +3,11 @@ package demo;
 import java.awt.Color;
 import java.util.ArrayList;
 
+import engine.Block;
+import engine.Bounds;
+import engine.Trigger;
+import engine.Wall;
+
 public class DungeonRoom {
     
     public class DoorEntry {
@@ -16,56 +21,56 @@ public class DungeonRoom {
 	    this.outLocY = outLocY;
 	}
 	
-	public int destination;
-	public int index;
-	public int dir;
+	public int     destination;
+	public int     index;
+	public int     dir;
 	public boolean open;
-	public int outLocX;
-	public int outLocY;
+	public int     outLocX;
+	public int     outLocY;
     }
     
-    public ArrayList<Block> roomMap;
-    public ArrayList<Wall> roomBackdrop;
+    public ArrayList<Block>      roomMap;
+    public ArrayList<Wall>       roomBackdrop;
     
-    private ArrayList<Trigger> triggerList;
+    private ArrayList<Trigger>   triggerList;
     
-    private int roomX;
-    private int roomY;
+    private int		  roomX;
+    private int		  roomY;
     
-    public int roomLocX;
-    public int roomLocY;
+    public int		   roomLocX;
+    public int		   roomLocY;
     
-    private int roomSizeX;
-    private int roomSizeY;
+    private int		  roomSizeX;
+    private int		  roomSizeY;
     
-    private boolean visited = false;
-    public boolean visitable = false;
+    private boolean	      visited	= false;
+    public boolean	       visitable      = false;
     
-    public static final int DEFAULT_ROOM_X = 16;
-    public static final int DEFAULT_ROOM_Y = 12;
+    public static final int      DEFAULT_ROOM_X = 16;
+    public static final int      DEFAULT_ROOM_Y = 12;
     
-    public static final int DOOR_SIZE = 4;
+    public static final int      DOOR_SIZE      = 4;
     
     private ArrayList<DoorEntry> surrounding;
-    public DoorEntry[] surroundingRooms;
+    public DoorEntry[]	   surroundingRooms;
     
-    private int numDoorsTop = 0;
-    private int numDoorsBottom = 0;
-    private int numDoorsLeft = 0;
-    private int numDoorsRight = 0;
+    private int		  numDoorsTop    = 0;
+    private int		  numDoorsBottom = 0;
+    private int		  numDoorsLeft   = 0;
+    private int		  numDoorsRight  = 0;
     
-    private int roomIndex;
+    private int		  roomIndex;
     
-    public int depth;
-    public int numVisit;
+    public int		   depth;
+    public int		   numVisit;
     
-    public static final int BIOME_RED = 0;
-    public static final int BIOME_YELLOW = 1;
-    public static final int BIOME_GREEN = 2;
-    public static final int BIOME_CYAN = 3;
-    public static final int BIOME_BLUE = 4;
-    public static final int BIOME_MAGENTA = 5;
-    public Color biome;
+    public static final int      BIOME_RED      = 0;
+    public static final int      BIOME_YELLOW   = 1;
+    public static final int      BIOME_GREEN    = 2;
+    public static final int      BIOME_CYAN     = 3;
+    public static final int      BIOME_BLUE     = 4;
+    public static final int      BIOME_MAGENTA  = 5;
+    public Color		 biome;
     
     public DungeonRoom(int roomIndex, int roomX, int roomY, int locX, int locY) {
 	this.roomLocX = locX;
@@ -162,28 +167,24 @@ public class DungeonRoom {
 	double bottom = roomY - 1;
 	double right = roomX - 1;
 	
-	roomBackdrop.add(new Wall(GameObject.ID_WALL_STONE, new Bounds(0, 0, roomX, roomY)));
+	roomBackdrop.add(new WallStone(new Bounds(0, 0, roomX, roomY)));
 	for (int x = 0; x < roomSizeX; x++) {
 	    double roomCX = x * DEFAULT_ROOM_X;
 	    double halfRoom = DEFAULT_ROOM_X / 2;
-	    roomMap.add(new Block(GameObject.ID_BLOCK_STONE, new Bounds(roomCX, 0, halfRoom - doorSize / 2, 1)));
-	    roomMap.add(new Block(GameObject.ID_BLOCK_STONE, new Bounds(roomCX + halfRoom + doorSize / 2, 0, halfRoom
-		    - doorSize / 2, 1)));
+	    roomMap.add(new BlockStone(new Bounds(roomCX, 0, halfRoom - doorSize / 2, 1)));
+	    roomMap.add(new BlockStone(new Bounds(roomCX + halfRoom + doorSize / 2, 0, halfRoom - doorSize / 2, 1)));
 	    
-	    roomMap.add(new Block(GameObject.ID_BLOCK_STONE, new Bounds(roomCX, bottom, halfRoom - doorSize / 2, 1)));
-	    roomMap.add(new Block(GameObject.ID_BLOCK_STONE, new Bounds(roomCX + halfRoom + doorSize / 2, bottom, halfRoom
-		    - doorSize / 2, 1)));
+	    roomMap.add(new BlockStone(new Bounds(roomCX, bottom, halfRoom - doorSize / 2, 1)));
+	    roomMap.add(new BlockStone(new Bounds(roomCX + halfRoom + doorSize / 2, bottom, halfRoom - doorSize / 2, 1)));
 	}
 	for (int y = 0; y < roomSizeY; y++) {
 	    double roomCY = y * DEFAULT_ROOM_Y;
 	    double halfRoom = DEFAULT_ROOM_Y / 2;
-	    roomMap.add(new Block(GameObject.ID_BLOCK_STONE, new Bounds(0, roomCY, 1, halfRoom - doorSize / 2)));
-	    roomMap.add(new Block(GameObject.ID_BLOCK_STONE, new Bounds(0, roomCY + halfRoom + doorSize / 2, 1, halfRoom
-		    - doorSize / 2)));
+	    roomMap.add(new BlockStone(new Bounds(0, roomCY, 1, halfRoom - doorSize / 2)));
+	    roomMap.add(new BlockStone(new Bounds(0, roomCY + halfRoom + doorSize / 2, 1, halfRoom - doorSize / 2)));
 	    
-	    roomMap.add(new Block(GameObject.ID_BLOCK_STONE, new Bounds(right, roomCY, 1, halfRoom - doorSize / 2)));
-	    roomMap.add(new Block(GameObject.ID_BLOCK_STONE, new Bounds(right, roomCY + halfRoom + doorSize / 2, 1, halfRoom
-		    - doorSize / 2)));
+	    roomMap.add(new BlockStone(new Bounds(right, roomCY, 1, halfRoom - doorSize / 2)));
+	    roomMap.add(new BlockStone(new Bounds(right, roomCY + halfRoom + doorSize / 2, 1, halfRoom - doorSize / 2)));
 	}
     }
     
@@ -198,14 +199,12 @@ public class DungeonRoom {
 		    case Game.DIR_DOWN:
 			yOffset = roomY - 1;
 		    case Game.DIR_UP:
-			roomMap.add(new Block(GameObject.ID_BLOCK_STONE, new Bounds(DEFAULT_ROOM_X / 2 - DOOR_SIZE / 2
-				+ door.index * DEFAULT_ROOM_X, yOffset, DOOR_SIZE, 1)));
+			roomMap.add(new BlockStone(new Bounds(DEFAULT_ROOM_X / 2 - DOOR_SIZE / 2 + door.index * DEFAULT_ROOM_X, yOffset, DOOR_SIZE, 1)));
 			break;
 		    case Game.DIR_RIGHT:
 			xOffset = roomX - 1;
 		    case Game.DIR_LEFT:
-			roomMap.add(new Block(GameObject.ID_BLOCK_STONE, new Bounds(xOffset, DEFAULT_ROOM_Y / 2 - DOOR_SIZE / 2
-				+ door.index * DEFAULT_ROOM_Y, 1, DOOR_SIZE)));
+			roomMap.add(new BlockStone(new Bounds(xOffset, DEFAULT_ROOM_Y / 2 - DOOR_SIZE / 2 + door.index * DEFAULT_ROOM_Y, 1, DOOR_SIZE)));
 			break;
 		}
 	    } else {
@@ -223,9 +222,7 @@ public class DungeonRoom {
 		    case Game.DIR_UP:
 			destY -= EntityPlayer.YSIZE / 2;
 			
-			triggerList.add(new TriggerTeleport(new Bounds(DEFAULT_ROOM_X / 2 - DOOR_SIZE / 2 + door.index
-				* DEFAULT_ROOM_X, yOffset, DOOR_SIZE, 1), new Bounds(destX, destY, 0, 0), destIndex, false,
-				true, door.dir));
+			triggerList.add(new TriggerTeleport(new Bounds(DEFAULT_ROOM_X / 2 - DOOR_SIZE / 2 + door.index * DEFAULT_ROOM_X, yOffset, DOOR_SIZE, 1), new Bounds(destX, destY, 0, 0), destIndex, false, true, door.dir));
 			break;
 		    case Game.DIR_RIGHT:
 			xOffset = roomX;
@@ -233,17 +230,14 @@ public class DungeonRoom {
 		    case Game.DIR_LEFT:
 			destX -= EntityPlayer.XSIZE / 2;
 			
-			triggerList.add(new TriggerTeleport(new Bounds(xOffset, DEFAULT_ROOM_Y / 2 - DOOR_SIZE / 2 + door.index
-				* DEFAULT_ROOM_Y, 1, DOOR_SIZE), new Bounds(destX, destY, 0, 0), destIndex, true, false,
-				door.dir));
+			triggerList.add(new TriggerTeleport(new Bounds(xOffset, DEFAULT_ROOM_Y / 2 - DOOR_SIZE / 2 + door.index * DEFAULT_ROOM_Y, 1, DOOR_SIZE), new Bounds(destX, destY, 0, 0), destIndex, true, false, door.dir));
 			break;
 		}
 	    }
 	}
     }
     
-    public static int[] getRoomByDoor(DungeonRoom[] map, int mapX, int mapY, int roomIndex, DoorEntry door,
-	    boolean useDestinationCoords) {
+    public static int[] getRoomByDoor(DungeonRoom[] map, int mapX, int mapY, int roomIndex, DoorEntry door, boolean useDestinationCoords) {
 	int[] returnCoords = new int[2];
 	returnCoords[0] = map[roomIndex].roomLocX;
 	returnCoords[1] = map[roomIndex].roomLocY;
@@ -275,9 +269,15 @@ public class DungeonRoom {
 		    break;
 	    }
 	}
-	returnCoords[0] = Game.wrap(returnCoords[0], mapX);
-	returnCoords[1] = Game.wrap(returnCoords[1], mapY);
+	returnCoords[0] = wrap(returnCoords[0], mapX);
+	returnCoords[1] = wrap(returnCoords[1], mapY);
 	return returnCoords;
+    }
+    
+    public static int wrap(int i, int limit) {
+	if (i < 0) { return i + limit; }
+	if (i >= limit) { return i - limit; }
+	return i;
     }
     
     /* Return format: {roomIndex, doorIndex} */

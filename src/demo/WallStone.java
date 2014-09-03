@@ -1,8 +1,11 @@
 package demo;
 
+import engine.Bounds;
+import engine.Wall;
+
 public class WallStone extends Wall {
-	
-	public WallStone(Bounds b) {
-		super(GameObject.ID_WALL_STONE, b);
-	}
+    
+    public WallStone(Bounds b) {
+	super(b, 1);
+    }
 }

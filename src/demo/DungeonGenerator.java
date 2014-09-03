@@ -5,6 +5,8 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.Queue;
 
+import engine.Bounds;
+
 public class DungeonGenerator {
     
     private class ArrayRoomEntry {
@@ -32,17 +34,17 @@ public class DungeonGenerator {
 	}
 	
 	public DungeonRoom room;
-	public int depth;
+	public int	 depth;
     }
     
-    private DungeonRoom[] dungeonMap;
+    private DungeonRoom[]    dungeonMap;
     
     private ArrayRoomEntry[] roomArray;
     
-    private int dungeonX;
-    private int dungeonY;
+    private int	      dungeonX;
+    private int	      dungeonY;
     
-    private int numberOfRooms;
+    private int	      numberOfRooms;
     
     public DungeonGenerator(int xSize, int ySize) {
 	this.dungeonX = xSize;
@@ -166,8 +168,7 @@ public class DungeonGenerator {
     
     private Bounds getRoomBounds(int i) {
 	DungeonRoom room = dungeonMap[i];
-	return new Bounds(dungeonMap[i].roomLocX, dungeonMap[i].roomLocY, dungeonMap[i].getRoomSizeX(),
-		dungeonMap[i].getRoomSizeY());
+	return new Bounds(dungeonMap[i].roomLocX, dungeonMap[i].roomLocY, dungeonMap[i].getRoomSizeX(), dungeonMap[i].getRoomSizeY());
     }
     
     private double sq(double d) {
@@ -181,15 +182,14 @@ public class DungeonGenerator {
 	    DungeonRoom.DoorEntry[] possibleDoors = dungeonMap[i].surroundingRooms;
 	    
 	    Bounds place = getRoomBounds(i);
-	    doorChance = Math.abs(Math.min(Math.min(Math.min(
-		    Math.min((int) Math.sqrt(sq(place.x - (dungeonX / 2)) + sq(place.y - (dungeonY / 2))),
-			    (int) Math.sqrt(sq(place.x - (dungeonX / 2 + dungeonX / 4)) + sq(place.y - (dungeonY / 2)))),
-		    (int) Math.sqrt(sq(place.x - (dungeonX / 2)) + sq(place.y - (dungeonY / 2 + dungeonY / 4)))), (int) Math
-		    .sqrt(sq(place.x - (dungeonX / 2 - dungeonX / 4)) + sq(place.y - (dungeonY / 2)))), (int) Math
-		    .sqrt(sq(place.x - (dungeonX / 2)) + sq(place.y - (dungeonY / 2 - dungeonY / 4))))) / 4 + 1; /*
-														  * /
-														  * 4
-														  */
+	    doorChance = Math.abs(Math.min(
+		    Math.min(
+			    Math.min(Math.min((int) Math.sqrt(sq(place.x - (dungeonX / 2)) + sq(place.y - (dungeonY / 2))), (int) Math.sqrt(sq(place.x - (dungeonX / 2 + dungeonX / 4)) + sq(place.y - (dungeonY / 2)))),
+				    (int) Math.sqrt(sq(place.x - (dungeonX / 2)) + sq(place.y - (dungeonY / 2 + dungeonY / 4)))), (int) Math.sqrt(sq(place.x - (dungeonX / 2 - dungeonX / 4)) + sq(place.y - (dungeonY / 2)))),
+		    (int) Math.sqrt(sq(place.x - (dungeonX / 2)) + sq(place.y - (dungeonY / 2 - dungeonY / 4))))) / 4 + 1; /*
+															    * /
+															    * 4
+															    */
 	    if (GameMain.RANDOM.nextInt(doorChance) == 0) {
 		possibleDoors = openRandomDoor(possibleDoors, i);
 	    }
@@ -213,16 +213,14 @@ public class DungeonGenerator {
 	int currentDoorIndex = GameMain.RANDOM.nextInt(possible.length);
 	DungeonRoom.DoorEntry doorToOpen = possible[currentDoorIndex];
 	doorToOpen.open = true;
-	int counterDoor = DungeonRoom.getCounterDoor(dungeonMap, Game.DUNGEON_SIZE_X, Game.DUNGEON_SIZE_Y, currentRoom,
-		currentDoorIndex)[1];
+	int counterDoor = DungeonRoom.getCounterDoor(dungeonMap, Game.DUNGEON_SIZE_X, Game.DUNGEON_SIZE_Y, currentRoom, currentDoorIndex)[1];
 	dungeonMap[doorToOpen.destination].surroundingRooms[counterDoor].open = true;
 	return possible;
     }
     
     public int getIndex(int x, int y) {
 	for (int i = 0; i < dungeonMap.length; i++) {
-	    if (x >= dungeonMap[i].roomLocX && x <= dungeonMap[i].roomLocX + dungeonMap[i].getRoomSizeX()
-		    && y >= dungeonMap[i].roomLocY && y <= dungeonMap[i].roomLocY + dungeonMap[i].getRoomSizeY()) { return i; }
+	    if (x >= dungeonMap[i].roomLocX && x <= dungeonMap[i].roomLocX + dungeonMap[i].getRoomSizeX() && y >= dungeonMap[i].roomLocY && y <= dungeonMap[i].roomLocY + dungeonMap[i].getRoomSizeY()) { return i; }
 	}
 	return -1;
     }
@@ -360,8 +358,7 @@ public class DungeonGenerator {
     }
     
     /**
-     * Creates the map and randomly
-     * generates rooms.
+     * Creates the map and randomly generates rooms.
      */
     public void generate() {
 	
