@@ -3,6 +3,7 @@ package demo;
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Image;
+import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
@@ -80,16 +81,17 @@ public class GameRenderer {
 	    backdrop = ImageIO.read(new File("assets/backdrop.png"));
 	} catch (IOException e) {}
 	
-	player = new Image[8];
+	player = new Image[65];
 	Image playerSheet = null;
 	int playerHeight = 64;
 	int playerWidth = 64;
 	try {
 	    playerSheet = ImageIO.read(new File("assets/player2.png"));
 	} catch (IOException e) {}
-	for (int i = 0; i < 8; i++) {
-	    int hoff = (i + 4 >= 8) ? 1 : 0;
-	    player[i] = ((BufferedImage) playerSheet).getSubimage(((i + 4) % 8) * 64, playerHeight * hoff, playerWidth, playerHeight);
+	for (int i = 0; i < player.length; i++) {
+	    int hoff = i / 8;
+	    System.out.println(i + ", " + hoff);
+	    player[i] = ((BufferedImage) playerSheet).getSubimage((i % 8) * playerWidth, playerHeight * hoff, playerWidth, playerHeight);
 	}
     }
     
@@ -217,8 +219,23 @@ public class GameRenderer {
 	     * (thePlayer.getBounds().getHeight()))); }
 	     */
 	    Bounds b = thePlayer.getBounds();
-	    g2d.drawImage(player[(int) (((steps) % (8 * 5)) / 5)], (int) (b.x * GameRenderer.PIXEL_SIZE_BLOCK) - xOffset, (int) (b.y * GameRenderer.PIXEL_SIZE_BLOCK) - yOffset, (int) (b.width * GameRenderer.PIXEL_SIZE_BLOCK),
-		    (int) (b.height * GameRenderer.PIXEL_SIZE_BLOCK), null);
+	    Image imageToRender = player[64];
+	    int renderX = (int) (b.x * GameRenderer.PIXEL_SIZE_BLOCK) - xOffset;
+	    int renderY = (int) (b.y * GameRenderer.PIXEL_SIZE_BLOCK) - yOffset;
+	    int renderWidth = (int) (b.width * GameRenderer.PIXEL_SIZE_BLOCK);
+	    int renderHeight = (int) (b.height * GameRenderer.PIXEL_SIZE_BLOCK);
+	    if (thePlayer.getOnGround() && thePlayer.getSpeedX() == 0) {
+		imageToRender = player[64];
+	    } else if (!thePlayer.getOnGround()) {
+		imageToRender = player[45];
+	    } else {
+		imageToRender = player[(int) (((steps) % (8 * 5)) / 5) + 4];
+	    }
+	    if (thePlayer.getFacing() == Game.DIR_RIGHT) {
+		imageToRender = getFlippedImage((BufferedImage) (imageToRender));
+	    }
+	    
+	    g2d.drawImage(imageToRender, renderX, renderY, renderWidth, renderHeight, null);
 	    
 	} else {
 	    for (int i = 0; i < dungeon.length; i++) {
@@ -273,5 +290,19 @@ public class GameRenderer {
 	    g2d.setColor(new Color(250, 250, 250));
 	    g2d.fillRect(loc_x * PIXEL_SIZE_MAPROOM + PIXEL_SIZE_MAPROOM / 4, loc_y * PIXEL_SIZE_MAPROOM + PIXEL_SIZE_MAPROOM / 4, x * PIXEL_SIZE_MAPROOM - PIXEL_SIZE_MAPROOM / 2, y * PIXEL_SIZE_MAPROOM - PIXEL_SIZE_MAPROOM / 2);
 	}
+    }
+    
+    public static BufferedImage getFlippedImage(BufferedImage bi) {
+	BufferedImage flipped = new BufferedImage(bi.getWidth(), bi.getHeight(), bi.getType());
+	AffineTransform tran = AffineTransform.getTranslateInstance(bi.getWidth(), 0);
+	AffineTransform flip = AffineTransform.getScaleInstance(-1d, 1d);
+	tran.concatenate(flip);
+	
+	Graphics2D g = flipped.createGraphics();
+	g.setTransform(tran);
+	g.drawImage(bi, 0, 0, null);
+	g.dispose();
+	
+	return flipped;
     }
 }

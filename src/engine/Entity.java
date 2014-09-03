@@ -22,6 +22,7 @@ public class Entity {
     private double  maxFallSpeed;
     
     private int     facing;
+    private boolean onGround;
     
     private boolean moveThisTickX;
     private boolean moveThisTickY;
@@ -137,6 +138,10 @@ public class Entity {
 	return new Point2D.Double(centerX, centerY);
     }
     
+    public boolean getOnGround() {
+	return onGround;
+    }
+    
     public void addSpeedX(double add) {
 	speedX += add;
 	if (speedX < -maxSpeedX) {
@@ -162,6 +167,7 @@ public class Entity {
     public void stepMovement(ArrayList<Block> map, boolean descend) {
 	
 	steps++;
+	onGround = false;
 	
 	/* Desired location */
 	double goalX = speedX + this.getBounds().getX();
@@ -265,6 +271,7 @@ public class Entity {
 		    if (thingsToCheck[i] instanceof BlockPlatform && (originalY + bounds.height > thingsToCheck[i].getBounds().y || descend)) {
 			continue;
 		    }
+		    onGround = true;
 		    goalY = upBound - this.getBounds().getHeight();
 		    this.setSpeedY(0);
 		}
