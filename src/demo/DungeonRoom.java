@@ -52,7 +52,7 @@ public class DungeonRoom {
     private boolean	      visited	= false;
     public boolean	       visitable      = false;
     
-    public static final int      DEFAULT_ROOM_X = 16;
+    public static final int      DEFAULT_ROOM_X = 24;
     public static final int      DEFAULT_ROOM_Y = 12;
     
     public static final int      DOOR_SIZE      = 4;
@@ -170,15 +170,14 @@ public class DungeonRoom {
 	double doorSize = DOOR_SIZE;
 	
 	if (roomSizeX == 1 && roomSizeY == 1) {
-	    int open = 0;
-	    for (int i = 0; i < this.surroundingRooms.length; i++) {
-		if (surroundingRooms[i].open) {
-		    open++;
-		}
-	    }
-	    if (open == 4) {
+	    if (surroundingRooms[0].open && surroundingRooms[1].open && surroundingRooms[2].open && surroundingRooms[3].open) {
 		try {
 		    input = ImageIO.read(new File("assets/levels/1.png"));
+		} catch (IOException e) {}
+	    }
+	    if (!surroundingRooms[0].open && surroundingRooms[1].open && surroundingRooms[2].open && surroundingRooms[3].open) {
+		try {
+		    input = ImageIO.read(new File("assets/levels/2.png"));
 		} catch (IOException e) {}
 	    }
 	}

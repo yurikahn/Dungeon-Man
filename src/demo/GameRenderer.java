@@ -88,10 +88,14 @@ public class GameRenderer {
 	try {
 	    playerSheet = ImageIO.read(new File("assets/player2.png"));
 	} catch (IOException e) {}
-	for (int i = 0; i < player.length; i++) {
-	    int hoff = i / 8;
-	    System.out.println(i + ", " + hoff);
-	    player[i] = ((BufferedImage) playerSheet).getSubimage((i % 8) * playerWidth, playerHeight * hoff, playerWidth, playerHeight);
+	if (playerSheet == null) {
+	    player = null;
+	} else {
+	    for (int i = 0; i < player.length; i++) {
+		int hoff = i / 8;
+		System.out.println(i + ", " + hoff);
+		player[i] = ((BufferedImage) playerSheet).getSubimage((i % 8) * playerWidth, playerHeight * hoff, playerWidth, playerHeight);
+	    }
 	}
     }
     
@@ -194,48 +198,41 @@ public class GameRenderer {
 	    }
 	    
 	    /* Draw Player */
-	    /*
-	     * g2d.setColor(COLOR_RED); g2d.fillRect((int)
-	     * (thePlayer.getBounds().getX() * GameRenderer.PIXEL_SIZE_BLOCK) -
-	     * xOffset, (int) (thePlayer.getBounds().getY() *
-	     * GameRenderer.PIXEL_SIZE_BLOCK) - yOffset, (int)
-	     * (GameRenderer.PIXEL_SIZE_BLOCK *
-	     * (thePlayer.getBounds().getWidth())), (int)
-	     * (GameRenderer.PIXEL_SIZE_BLOCK *
-	     * (thePlayer.getBounds().getHeight())));
-	     * g2d.setColor(COLOR_YELLOW); if (thePlayer.getFacing() ==
-	     * Game.DIR_LEFT) { g2d.fillRect((int)
-	     * ((thePlayer.getBounds().getX() + thePlayer.getBounds().getWidth()
-	     * - 0.2) * GameRenderer.PIXEL_SIZE_BLOCK) - xOffset, (int)
-	     * (thePlayer.getBounds().getY() * GameRenderer.PIXEL_SIZE_BLOCK) -
-	     * yOffset, (int) (GameRenderer.PIXEL_SIZE_BLOCK * 0.2), (int)
-	     * (GameRenderer.PIXEL_SIZE_BLOCK *
-	     * (thePlayer.getBounds().getHeight()))); } else {
-	     * g2d.fillRect((int) (thePlayer.getBounds().getX() *
-	     * GameRenderer.PIXEL_SIZE_BLOCK) - xOffset, (int)
-	     * (thePlayer.getBounds().getY() * GameRenderer.PIXEL_SIZE_BLOCK) -
-	     * yOffset, (int) (GameRenderer.PIXEL_SIZE_BLOCK * 0.2), (int)
-	     * (GameRenderer.PIXEL_SIZE_BLOCK *
-	     * (thePlayer.getBounds().getHeight()))); }
-	     */
-	    Bounds b = thePlayer.getBounds();
-	    Image imageToRender = player[64];
-	    int renderX = (int) (b.x * GameRenderer.PIXEL_SIZE_BLOCK) - xOffset;
-	    int renderY = (int) (b.y * GameRenderer.PIXEL_SIZE_BLOCK) - yOffset;
-	    int renderWidth = (int) (b.width * GameRenderer.PIXEL_SIZE_BLOCK);
-	    int renderHeight = (int) (b.height * GameRenderer.PIXEL_SIZE_BLOCK);
-	    if (thePlayer.getOnGround() && thePlayer.getSpeedX() == 0) {
-		imageToRender = player[64];
-	    } else if (!thePlayer.getOnGround()) {
-		imageToRender = player[45];
-	    } else {
-		imageToRender = player[(int) (((steps) % (8 * 5)) / 5) + 4];
-	    }
-	    if (thePlayer.getFacing() == Game.DIR_RIGHT) {
-		imageToRender = getFlippedImage((BufferedImage) (imageToRender));
-	    }
 	    
-	    g2d.drawImage(imageToRender, renderX, renderY, renderWidth, renderHeight, null);
+	    boolean boundBoxes = false;
+	    if (boundBoxes || player == null) {
+		g2d.setColor(COLOR_RED);
+		g2d.fillRect((int) (thePlayer.getBounds().getX() * GameRenderer.PIXEL_SIZE_BLOCK) - xOffset, (int) (thePlayer.getBounds().getY() * GameRenderer.PIXEL_SIZE_BLOCK) - yOffset,
+			(int) (GameRenderer.PIXEL_SIZE_BLOCK * (thePlayer.getBounds().getWidth())), (int) (GameRenderer.PIXEL_SIZE_BLOCK * (thePlayer.getBounds().getHeight())));
+		g2d.setColor(COLOR_YELLOW);
+		if (thePlayer.getFacing() == Game.DIR_LEFT) {
+		    g2d.fillRect((int) ((thePlayer.getBounds().getX() + thePlayer.getBounds().getWidth() - 0.2) * GameRenderer.PIXEL_SIZE_BLOCK) - xOffset, (int) (thePlayer.getBounds().getY() * GameRenderer.PIXEL_SIZE_BLOCK) - yOffset,
+			    (int) (GameRenderer.PIXEL_SIZE_BLOCK * 0.2), (int) (GameRenderer.PIXEL_SIZE_BLOCK * (thePlayer.getBounds().getHeight())));
+		} else {
+		    g2d.fillRect((int) (thePlayer.getBounds().getX() * GameRenderer.PIXEL_SIZE_BLOCK) - xOffset, (int) (thePlayer.getBounds().getY() * GameRenderer.PIXEL_SIZE_BLOCK) - yOffset, (int) (GameRenderer.PIXEL_SIZE_BLOCK * 0.2),
+			    (int) (GameRenderer.PIXEL_SIZE_BLOCK * (thePlayer.getBounds().getHeight())));
+		}
+	    }
+	    if (player != null) {
+		Bounds b = thePlayer.getBounds();
+		Image imageToRender = player[64];
+		int renderX = (int) (b.x * GameRenderer.PIXEL_SIZE_BLOCK) - xOffset - 60;
+		int renderY = (int) (b.y * GameRenderer.PIXEL_SIZE_BLOCK) - yOffset;
+		int renderWidth = 3 * GameRenderer.PIXEL_SIZE_BLOCK;
+		int renderHeight = 3 * GameRenderer.PIXEL_SIZE_BLOCK;
+		if (thePlayer.getOnGround() && thePlayer.getSpeedX() == 0) {
+		    imageToRender = player[64];
+		} else if (!thePlayer.getOnGround()) {
+		    imageToRender = player[45];
+		} else {
+		    imageToRender = player[(int) (((steps) % (8 * 5)) / 5) + 4];
+		}
+		if (thePlayer.getFacing() == Game.DIR_RIGHT) {
+		    imageToRender = getFlippedImage((BufferedImage) (imageToRender));
+		}
+		
+		g2d.drawImage(imageToRender, renderX, renderY, renderWidth, renderHeight, null);
+	    }
 	    
 	} else {
 	    for (int i = 0; i < dungeon.length; i++) {
