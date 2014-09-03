@@ -13,62 +13,55 @@ import java.util.ArrayList;
 import javax.swing.JPanel;
 
 /**
- * The game user interface, handles IO,
- * and passes commands off to the other
+ * The game user interface, handles IO, and passes commands off to the other
  * parts of the game.
  * 
  * @author Moore
- *
  */
 public class GamePanel extends JPanel {
     
     /**
      * Version UID, because they say so.
      */
-    private static final long serialVersionUID = 8978416916942029249L;
+    private static final long    serialVersionUID = 8978416916942029249L;
     
     /**
-     * In pixels, the dimensions of
-     * the panel.
+     * In pixels, the dimensions of the panel.
      */
-    private int panelXSize;
-    private int panelYSize;
+    private int		  panelXSize;
+    private int		  panelYSize;
     
     /**
-     * In pixels, the side length of each
-     * block to render (game unit).
+     * In pixels, the side length of each block to render (game unit).
      */
-    private int blockSize;
+    private int		  blockSize;
     
     /**
-     * Keep the x and y size of the visible
-     * board to render, to make things
-     * a little simpler.
+     * Keep the x and y size of the visible board to render, to make things a
+     * little simpler.
      */
-    private int boardX;
-    private int boardY;
+    private int		  boardX;
+    private int		  boardY;
     
     /**
-     * The game instance does all the grunt
-     * work of the game processing and
+     * The game instance does all the grunt work of the game processing and
      * stores the full data of the world.
      */
-    private Game gameInstance;
+    private Game		 gameInstance;
     
     /**
-     * This is a way of making the input
-     * less like a text field and more
-     * like a game - it should help smooth
-     * out movement and make the controls
-     * less sticky.
+     * This is a way of making the input less like a text field and more like a
+     * game - it should help smooth out movement and make the controls less
+     * sticky.
      */
     private ArrayList<Character> keyList;
+    private ArrayList<Character> keyLock;
     
     /**
      * Current position of the mouse.
      */
-    private int mouseX;
-    private int mouseY;
+    private int		  mouseX;
+    private int		  mouseY;
     
     public GamePanel(int xDimension, int yDimension) {
 	this.panelXSize = xDimension;
@@ -87,6 +80,7 @@ public class GamePanel extends JPanel {
 	
 	/* Set up input system */
 	keyList = new ArrayList<Character>();
+	keyLock = new ArrayList<Character>();
 	this.addKeyListener(new KeyAdapter() {
 	    
 	    @Override
@@ -109,8 +103,7 @@ public class GamePanel extends JPanel {
 	    }
 	    
 	    @Override
-	    public void mouseDragged(MouseEvent arg0) {
-	    }
+	    public void mouseDragged(MouseEvent arg0) {}
 	});
 	this.setFocusable(true);
     }
@@ -121,6 +114,7 @@ public class GamePanel extends JPanel {
      * @param key
      */
     public void pressKey(char key) {
+	if (keyLock.contains(key)) { return; }
 	if (!keyList.contains(key)) {
 	    keyList.add(key);
 	}
@@ -135,12 +129,21 @@ public class GamePanel extends JPanel {
 	if (keyList.contains(key)) {
 	    keyList.remove((Character) key);
 	}
+	if (keyLock.contains(key)) {
+	    keyLock.remove((Character) key);
+	}
+    }
+    
+    public void lockKey(char key) {
+	releaseKey(key);
+	if (!keyLock.contains(key)) {
+	    keyLock.add(key);
+	}
     }
     
     /**
-     * Called repeatedly to step through
-     * the game. It sends and receives
-     * I/O data from the game instance.
+     * Called repeatedly to step through the game. It sends and receives I/O
+     * data from the game instance.
      */
     public void step() {/* Send keyboard input in a game-like fashion */
 	gameInstance.addInput(keyList, mouseX, mouseY);
@@ -153,12 +156,9 @@ public class GamePanel extends JPanel {
     }
     
     /**
-     * JPanel's paint method, modified -
-     * this is the main rendering section
-     * of the game. It draws basic
-     * graphics for all visible entities
-     * and for the game world using
-     * Graphics2D.
+     * JPanel's paint method, modified - this is the main rendering section of
+     * the game. It draws basic graphics for all visible entities and for the
+     * game world using Graphics2D.
      */
     @Override
     public void paint(Graphics basicGraphics) {

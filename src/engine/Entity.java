@@ -1,8 +1,11 @@
 package engine;
 
+import java.awt.geom.Point2D;
 import java.util.ArrayList;
 
+import demo.BlockPlatform;
 import demo.EntityPlayer;
+import demo.Game;
 
 public class Entity {
     
@@ -17,6 +20,8 @@ public class Entity {
     private double  gravity;
     private double  jumpForce;
     private double  maxFallSpeed;
+    
+    private int     facing;
     
     private boolean moveThisTickX;
     private boolean moveThisTickY;
@@ -36,6 +41,8 @@ public class Entity {
 	
 	this.moveThisTickX = false;
 	this.moveThisTickY = false;
+	
+	this.facing = Game.DIR_LEFT;
     }
     
     public Bounds getBounds() {
@@ -118,6 +125,16 @@ public class Entity {
 	this.maxFallSpeed = maxFallSpeed;
     }
     
+    public int getFacing() {
+	return facing;
+    }
+    
+    public Point2D.Double getCenter() {
+	double centerX = bounds.x + (bounds.width / 2);
+	double centerY = bounds.y + (bounds.height / 2);
+	return new Point2D.Double(centerX, centerY);
+    }
+    
     public void addSpeedX(double add) {
 	speedX += add;
 	if (speedX < -maxSpeedX) {
@@ -140,7 +157,7 @@ public class Entity {
 	moveThisTickY = true;
     }
     
-    public void stepMovement(ArrayList<Block> map) {
+    public void stepMovement(ArrayList<Block> map, boolean descend) {
 	
 	/* Desired location */
 	double goalX = speedX + this.getBounds().getX();
@@ -153,11 +170,18 @@ public class Entity {
 	Block[] thingsToCheck = null;
 	
 	if ((thingsToCheck = intersectWithMap(new Bounds(this.getBounds().getX(), goalY, EntityPlayer.XSIZE, EntityPlayer.YSIZE), map)) != null) {
-	    finalPY = handleVMovement(thingsToCheck, goalY, speedY);
+	    finalPY = handleVMovement(thingsToCheck, goalY, bounds.y, speedY, descend);
 	}
 	
 	if ((thingsToCheck = intersectWithMap(new Bounds(goalX, finalPY, EntityPlayer.XSIZE, EntityPlayer.YSIZE), map)) != null) {
-	    finalPX = handleHMovement(thingsToCheck, goalX, speedX);
+	    finalPX = handleHMovement(thingsToCheck, goalX, bounds.x, speedX);
+	}
+	
+	if (finalPX < bounds.x) {
+	    facing = Game.DIR_RIGHT;
+	}
+	if (finalPX > bounds.x) {
+	    facing = Game.DIR_LEFT;
 	}
 	
 	bounds.x = finalPX;
@@ -202,8 +226,11 @@ public class Entity {
 	return intersect.toArray(new Block[intersect.size()]);
     }
     
-    private double handleHMovement(Block[] thingsToCheck, double goalX, double rx) {
+    private double handleHMovement(Block[] thingsToCheck, double goalX, double originalX, double rx) {
 	for (int i = 0; i < thingsToCheck.length; i++) {
+	    if (thingsToCheck[i] instanceof BlockPlatform) {
+		continue;
+	    }
 	    double rightBound = thingsToCheck[i].getBounds().getX() + thingsToCheck[i].getBounds().getWidth();
 	    double leftBound = thingsToCheck[i].getBounds().getX();
 	    if (rx > 0) {
@@ -224,19 +251,25 @@ public class Entity {
 	return goalX;
     }
     
-    private double handleVMovement(Block[] thingsToCheck, double goalY, double ry) {
+    private double handleVMovement(Block[] thingsToCheck, double goalY, double originalY, double ry, boolean descend) {
 	for (int i = 0; i < thingsToCheck.length; i++) {
 	    double downBound = thingsToCheck[i].getBounds().getY() + thingsToCheck[i].getBounds().getHeight();
 	    double upBound = thingsToCheck[i].getBounds().getY();
 	    if (ry > 0) {
 		/* --- DOWN --- */
 		if (downBound > goalY) {
+		    if (thingsToCheck[i] instanceof BlockPlatform && (originalY + bounds.height > thingsToCheck[i].getBounds().y || descend)) {
+			continue;
+		    }
 		    goalY = upBound - this.getBounds().getHeight();
 		    this.setSpeedY(0);
 		}
 	    }
 	    if (ry < 0) {
 		/* --- UP --- */
+		if (thingsToCheck[i] instanceof BlockPlatform) {
+		    continue;
+		}
 		if (goalY < downBound) {
 		    goalY = downBound;
 		    this.setSpeedY(0);

@@ -44,6 +44,8 @@ public class Game {
     public boolean	  mapHack	= false;
     public boolean	  playerOnGround = false;
     
+    public boolean	  descend	= false;
+    
     private GameRenderer    renderer;
     private GamePanel       ioPanel;
     
@@ -99,10 +101,11 @@ public class Game {
 	if (inPlay) {
 	    if ('w' == input) {
 		player.jump();
-		ioPanel.releaseKey('w');
+		ioPanel.lockKey('w');
 	    }
 	    if ('s' == input) {
 		player.addSpeedY(player.getAcceleration());
+		descend = true;
 	    }
 	    if ('a' == input) {
 		player.addSpeedX(-player.getAcceleration());
@@ -123,7 +126,8 @@ public class Game {
 	
 	/* +++ MOVEMENT ++++ */
 	
-	player.stepMovement(dungeon[currentRoom].getRoomMap());
+	player.stepMovement(dungeon[currentRoom].getRoomMap(), descend);
+	descend = false;
     }
     
     private boolean applyTriggers() {
@@ -132,7 +136,8 @@ public class Game {
 	for (int i = 0; i < triggerList.size(); i++) {
 	    if (triggerList.get(i) instanceof TriggerTeleport) {
 		TriggerTeleport tele = (TriggerTeleport) triggerList.get(i);
-		if (player.getBounds().intersects(tele.getBounds())) {
+		
+		if (tele.getBounds().contains(player.getCenter())) {
 		    player = (EntityPlayer) tele.trigger(player);
 		    currentRoom = tele.getDestIndex();
 		    found = true;

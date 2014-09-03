@@ -1,7 +1,13 @@
 package demo;
 
 import java.awt.Color;
+import java.awt.Image;
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
+
+import javax.imageio.ImageIO;
 
 import engine.Block;
 import engine.Bounds;
@@ -64,12 +70,6 @@ public class DungeonRoom {
     public int		   depth;
     public int		   numVisit;
     
-    public static final int      BIOME_RED      = 0;
-    public static final int      BIOME_YELLOW   = 1;
-    public static final int      BIOME_GREEN    = 2;
-    public static final int      BIOME_CYAN     = 3;
-    public static final int      BIOME_BLUE     = 4;
-    public static final int      BIOME_MAGENTA  = 5;
     public Color		 biome;
     
     public DungeonRoom(int roomIndex, int roomX, int roomY, int locX, int locY) {
@@ -162,29 +162,64 @@ public class DungeonRoom {
 	roomMap = new ArrayList<Block>();
 	roomBackdrop = new ArrayList<Wall>();
 	
+	roomBackdrop.add(new WallStone(new Bounds(0, 0, roomX, roomY)));
+	
+    }
+    
+    public void fillImage(Image input) {
 	double doorSize = DOOR_SIZE;
+	
+	if (roomSizeX == 1 && roomSizeY == 1) {
+	    int open = 0;
+	    for (int i = 0; i < this.surroundingRooms.length; i++) {
+		if (surroundingRooms[i].open) {
+		    open++;
+		}
+	    }
+	    if (open == 4) {
+		try {
+		    input = ImageIO.read(new File("assets/levels/1.png"));
+		} catch (IOException e) {}
+	    }
+	}
 	
 	double bottom = roomY - 1;
 	double right = roomX - 1;
-	
-	roomBackdrop.add(new WallStone(new Bounds(0, 0, roomX, roomY)));
-	for (int x = 0; x < roomSizeX; x++) {
-	    double roomCX = x * DEFAULT_ROOM_X;
-	    double halfRoom = DEFAULT_ROOM_X / 2;
-	    roomMap.add(new BlockStone(new Bounds(roomCX, 0, halfRoom - doorSize / 2, 1)));
-	    roomMap.add(new BlockStone(new Bounds(roomCX + halfRoom + doorSize / 2, 0, halfRoom - doorSize / 2, 1)));
-	    
-	    roomMap.add(new BlockStone(new Bounds(roomCX, bottom, halfRoom - doorSize / 2, 1)));
-	    roomMap.add(new BlockStone(new Bounds(roomCX + halfRoom + doorSize / 2, bottom, halfRoom - doorSize / 2, 1)));
-	}
-	for (int y = 0; y < roomSizeY; y++) {
-	    double roomCY = y * DEFAULT_ROOM_Y;
-	    double halfRoom = DEFAULT_ROOM_Y / 2;
-	    roomMap.add(new BlockStone(new Bounds(0, roomCY, 1, halfRoom - doorSize / 2)));
-	    roomMap.add(new BlockStone(new Bounds(0, roomCY + halfRoom + doorSize / 2, 1, halfRoom - doorSize / 2)));
-	    
-	    roomMap.add(new BlockStone(new Bounds(right, roomCY, 1, halfRoom - doorSize / 2)));
-	    roomMap.add(new BlockStone(new Bounds(right, roomCY + halfRoom + doorSize / 2, 1, halfRoom - doorSize / 2)));
+	if (input == null) {
+	    for (int x = 0; x < roomSizeX; x++) {
+		double roomCX = x * DEFAULT_ROOM_X;
+		double halfRoom = DEFAULT_ROOM_X / 2;
+		roomMap.add(new BlockStone(new Bounds(roomCX, 0, halfRoom - doorSize / 2, 1)));
+		roomMap.add(new BlockStone(new Bounds(roomCX + halfRoom + doorSize / 2, 0, halfRoom - doorSize / 2, 1)));
+		
+		roomMap.add(new BlockStone(new Bounds(roomCX, bottom, halfRoom - doorSize / 2, 1)));
+		roomMap.add(new BlockStone(new Bounds(roomCX + halfRoom + doorSize / 2, bottom, halfRoom - doorSize / 2, 1)));
+		
+		roomMap.add(new BlockStone(new Bounds(DEFAULT_ROOM_X / 2 - DOOR_SIZE / 2 + x * DEFAULT_ROOM_X, 5, DOOR_SIZE, 1)));
+	    }
+	    for (int y = 0; y < roomSizeY; y++) {
+		double roomCY = y * DEFAULT_ROOM_Y;
+		double halfRoom = DEFAULT_ROOM_Y / 2;
+		roomMap.add(new BlockStone(new Bounds(0, roomCY, 1, halfRoom - doorSize / 2)));
+		roomMap.add(new BlockStone(new Bounds(0, roomCY + halfRoom + doorSize / 2, 1, halfRoom - doorSize / 2)));
+		
+		roomMap.add(new BlockStone(new Bounds(right, roomCY, 1, halfRoom - doorSize / 2)));
+		roomMap.add(new BlockStone(new Bounds(right, roomCY + halfRoom + doorSize / 2, 1, halfRoom - doorSize / 2)));
+	    }
+	} else {
+	    for (int x = 0; x < roomX; x++) {
+		for (int y = 0; y < roomY; y++) {
+		    int R = (((BufferedImage) input).getRGB(x, y) & 0x00FF0000) / (256 * 256);
+		    int G = (((BufferedImage) input).getRGB(x, y) & 0x0000FF00) / 256;
+		    int B = ((BufferedImage) input).getRGB(x, y) & 0x000000FF;
+		    if (R == 0 && G == 0 && B == 0) {
+			roomMap.add(new BlockStone(new Bounds(x, y, 1, 1)));
+		    }
+		    if (R == 0 && G == 0 && B == 255) {
+			roomMap.add(new BlockPlatform(new Bounds(x, y, 1, 0.5)));
+		    }
+		}
+	    }
 	}
     }
     

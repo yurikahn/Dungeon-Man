@@ -128,8 +128,9 @@ public class GameRenderer {
 		} else {
 		    for (double x = 0; x < currentRoomBackdrop.get(i).getBounds().getWidth(); x++) {
 			for (double y = 0; y < currentRoomBackdrop.get(i).getBounds().getHeight(); y++) {
-			    g2d.drawImage(backdrop, (int) ((currentRoomBackdrop.get(i).getBounds().getX() + x) * GameRenderer.PIXEL_SIZE_BLOCK) - xOffset, (int) ((currentRoomBackdrop.get(i).getBounds().getY() + y) * GameRenderer.PIXEL_SIZE_BLOCK)
-				    - yOffset, (GameRenderer.PIXEL_SIZE_BLOCK), (GameRenderer.PIXEL_SIZE_BLOCK), null);
+			    g2d.drawImage(backdrop, (int) ((currentRoomBackdrop.get(i).getBounds().getX() + x) * GameRenderer.PIXEL_SIZE_BLOCK) - xOffset * 1 / ((int) currentRoomBackdrop.get(i).getLevel() + 1), (int) ((currentRoomBackdrop.get(i)
+				    .getBounds().getY() + y) * GameRenderer.PIXEL_SIZE_BLOCK)
+				    - yOffset * 1 / ((int) currentRoomBackdrop.get(i).getLevel() + 1), (GameRenderer.PIXEL_SIZE_BLOCK), (GameRenderer.PIXEL_SIZE_BLOCK), null);
 			}
 		    }
 		}
@@ -158,7 +159,7 @@ public class GameRenderer {
 		if (COLOR_YELLOW.equals(currentRoom.biome)) {
 		    image = yellow;
 		}
-		if (image == null) {
+		if (image == null || currentRoomWalls.get(i) instanceof BlockPlatform) {
 		    g2d.setColor(currentRoom.biome);
 		    g2d.fillRect((int) (currentRoomWalls.get(i).getBounds().getX() * GameRenderer.PIXEL_SIZE_BLOCK) - xOffset, (int) (currentRoomWalls.get(i).getBounds().getY() * GameRenderer.PIXEL_SIZE_BLOCK) - yOffset, (int) (currentRoomWalls.get(i)
 			    .getBounds().getWidth() * GameRenderer.PIXEL_SIZE_BLOCK), (int) (currentRoomWalls.get(i).getBounds().getHeight() * GameRenderer.PIXEL_SIZE_BLOCK));
@@ -176,6 +177,14 @@ public class GameRenderer {
 	    g2d.setColor(COLOR_RED);
 	    g2d.fillRect((int) (thePlayer.getBounds().getX() * GameRenderer.PIXEL_SIZE_BLOCK) - xOffset, (int) (thePlayer.getBounds().getY() * GameRenderer.PIXEL_SIZE_BLOCK) - yOffset,
 		    (int) (GameRenderer.PIXEL_SIZE_BLOCK * (thePlayer.getBounds().getWidth())), (int) (GameRenderer.PIXEL_SIZE_BLOCK * (thePlayer.getBounds().getHeight())));
+	    g2d.setColor(COLOR_YELLOW);
+	    if (thePlayer.getFacing() == Game.DIR_LEFT) {
+		g2d.fillRect((int) ((thePlayer.getBounds().getX() + thePlayer.getBounds().getWidth() - 0.2) * GameRenderer.PIXEL_SIZE_BLOCK) - xOffset, (int) (thePlayer.getBounds().getY() * GameRenderer.PIXEL_SIZE_BLOCK) - yOffset,
+			(int) (GameRenderer.PIXEL_SIZE_BLOCK * 0.2), (int) (GameRenderer.PIXEL_SIZE_BLOCK * (thePlayer.getBounds().getHeight())));
+	    } else {
+		g2d.fillRect((int) (thePlayer.getBounds().getX() * GameRenderer.PIXEL_SIZE_BLOCK) - xOffset, (int) (thePlayer.getBounds().getY() * GameRenderer.PIXEL_SIZE_BLOCK) - yOffset, (int) (GameRenderer.PIXEL_SIZE_BLOCK * 0.2),
+			(int) (GameRenderer.PIXEL_SIZE_BLOCK * (thePlayer.getBounds().getHeight())));
+	    }
 	} else {
 	    for (int i = 0; i < dungeon.length; i++) {
 		if (dungeon[i].numVisit > 0 && !dungeon[i].isVisited() && !mapHack) {
