@@ -357,6 +357,12 @@ public class DungeonGenerator {
 	}
     }
     
+    private void decorateMap() {
+	for (int i = 0; i < dungeonMap.length; i++) {
+	    dungeonMap[i].fillImage(null);
+	}
+    }
+    
     /**
      * Creates the map and randomly generates rooms.
      */
@@ -368,6 +374,8 @@ public class DungeonGenerator {
 	 */
 	dungeonMap = generateNodeMap(generatePseudoMap());
 	cullNodeMap();
+	decorateMap();
+	
 	/*
 	 * Biome generation: Posturized colorizing using RGB cycler of DFS depth
 	 * from player spawn with inter-room smoothing

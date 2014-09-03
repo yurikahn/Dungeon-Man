@@ -3,6 +3,7 @@ package demo;
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Image;
+import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -11,6 +12,7 @@ import javax.imageio.ImageIO;
 
 import demo.DungeonRoom.DoorEntry;
 import engine.Block;
+import engine.Bounds;
 import engine.Wall;
 
 public class GameRenderer {
@@ -25,6 +27,8 @@ public class GameRenderer {
     public static final Color COLOR_YELLOW       = new Color(210, 210, 50);
     public static final Color COLOR_MAGENTA      = new Color(210, 50, 210);
     
+    private long	      steps	      = 0;
+    
     public GameRenderer() {
 	this.init();
     }
@@ -37,13 +41,14 @@ public class GameRenderer {
 	loadSprites();
     }
     
-    private Image blue;
-    private Image green;
-    private Image red;
-    private Image cyan;
-    private Image yellow;
-    private Image magenta;
-    private Image backdrop;
+    private Image   blue;
+    private Image   green;
+    private Image   red;
+    private Image   cyan;
+    private Image   yellow;
+    private Image   magenta;
+    private Image   backdrop;
+    private Image[] player;
     
     private void loadSprites() {
 	blue = null;
@@ -74,10 +79,23 @@ public class GameRenderer {
 	try {
 	    backdrop = ImageIO.read(new File("assets/backdrop.png"));
 	} catch (IOException e) {}
+	
+	player = new Image[8];
+	Image playerSheet = null;
+	int playerHeight = 64;
+	int playerWidth = 64;
+	try {
+	    playerSheet = ImageIO.read(new File("assets/player2.png"));
+	} catch (IOException e) {}
+	for (int i = 0; i < 8; i++) {
+	    int hoff = (i + 4 >= 8) ? 1 : 0;
+	    player[i] = ((BufferedImage) playerSheet).getSubimage(((i + 4) % 8) * 64, playerHeight * hoff, playerWidth, playerHeight);
+	}
     }
     
     public void render(Graphics2D g2d, EntityPlayer thePlayer, DungeonRoom[] dungeon, boolean inPlay, int currentRoomIndex, boolean mapHack) {
 	if (inPlay) {
+	    steps++;
 	    DungeonRoom currentRoom = dungeon[currentRoomIndex];
 	    int pixelSizeX = GameRenderer.PIXEL_SIZE_BLOCK * DungeonRoom.DEFAULT_ROOM_X;
 	    int pixelSizeY = GameRenderer.PIXEL_SIZE_BLOCK * DungeonRoom.DEFAULT_ROOM_Y;
@@ -174,17 +192,34 @@ public class GameRenderer {
 	    }
 	    
 	    /* Draw Player */
-	    g2d.setColor(COLOR_RED);
-	    g2d.fillRect((int) (thePlayer.getBounds().getX() * GameRenderer.PIXEL_SIZE_BLOCK) - xOffset, (int) (thePlayer.getBounds().getY() * GameRenderer.PIXEL_SIZE_BLOCK) - yOffset,
-		    (int) (GameRenderer.PIXEL_SIZE_BLOCK * (thePlayer.getBounds().getWidth())), (int) (GameRenderer.PIXEL_SIZE_BLOCK * (thePlayer.getBounds().getHeight())));
-	    g2d.setColor(COLOR_YELLOW);
-	    if (thePlayer.getFacing() == Game.DIR_LEFT) {
-		g2d.fillRect((int) ((thePlayer.getBounds().getX() + thePlayer.getBounds().getWidth() - 0.2) * GameRenderer.PIXEL_SIZE_BLOCK) - xOffset, (int) (thePlayer.getBounds().getY() * GameRenderer.PIXEL_SIZE_BLOCK) - yOffset,
-			(int) (GameRenderer.PIXEL_SIZE_BLOCK * 0.2), (int) (GameRenderer.PIXEL_SIZE_BLOCK * (thePlayer.getBounds().getHeight())));
-	    } else {
-		g2d.fillRect((int) (thePlayer.getBounds().getX() * GameRenderer.PIXEL_SIZE_BLOCK) - xOffset, (int) (thePlayer.getBounds().getY() * GameRenderer.PIXEL_SIZE_BLOCK) - yOffset, (int) (GameRenderer.PIXEL_SIZE_BLOCK * 0.2),
-			(int) (GameRenderer.PIXEL_SIZE_BLOCK * (thePlayer.getBounds().getHeight())));
-	    }
+	    /*
+	     * g2d.setColor(COLOR_RED); g2d.fillRect((int)
+	     * (thePlayer.getBounds().getX() * GameRenderer.PIXEL_SIZE_BLOCK) -
+	     * xOffset, (int) (thePlayer.getBounds().getY() *
+	     * GameRenderer.PIXEL_SIZE_BLOCK) - yOffset, (int)
+	     * (GameRenderer.PIXEL_SIZE_BLOCK *
+	     * (thePlayer.getBounds().getWidth())), (int)
+	     * (GameRenderer.PIXEL_SIZE_BLOCK *
+	     * (thePlayer.getBounds().getHeight())));
+	     * g2d.setColor(COLOR_YELLOW); if (thePlayer.getFacing() ==
+	     * Game.DIR_LEFT) { g2d.fillRect((int)
+	     * ((thePlayer.getBounds().getX() + thePlayer.getBounds().getWidth()
+	     * - 0.2) * GameRenderer.PIXEL_SIZE_BLOCK) - xOffset, (int)
+	     * (thePlayer.getBounds().getY() * GameRenderer.PIXEL_SIZE_BLOCK) -
+	     * yOffset, (int) (GameRenderer.PIXEL_SIZE_BLOCK * 0.2), (int)
+	     * (GameRenderer.PIXEL_SIZE_BLOCK *
+	     * (thePlayer.getBounds().getHeight()))); } else {
+	     * g2d.fillRect((int) (thePlayer.getBounds().getX() *
+	     * GameRenderer.PIXEL_SIZE_BLOCK) - xOffset, (int)
+	     * (thePlayer.getBounds().getY() * GameRenderer.PIXEL_SIZE_BLOCK) -
+	     * yOffset, (int) (GameRenderer.PIXEL_SIZE_BLOCK * 0.2), (int)
+	     * (GameRenderer.PIXEL_SIZE_BLOCK *
+	     * (thePlayer.getBounds().getHeight()))); }
+	     */
+	    Bounds b = thePlayer.getBounds();
+	    g2d.drawImage(player[(int) (((steps) % (8 * 5)) / 5)], (int) (b.x * GameRenderer.PIXEL_SIZE_BLOCK) - xOffset, (int) (b.y * GameRenderer.PIXEL_SIZE_BLOCK) - yOffset, (int) (b.width * GameRenderer.PIXEL_SIZE_BLOCK),
+		    (int) (b.height * GameRenderer.PIXEL_SIZE_BLOCK), null);
+	    
 	} else {
 	    for (int i = 0; i < dungeon.length; i++) {
 		if (dungeon[i].numVisit > 0 && !dungeon[i].isVisited() && !mapHack) {

@@ -26,6 +26,8 @@ public class Entity {
     private boolean moveThisTickX;
     private boolean moveThisTickY;
     
+    private long    steps;
+    
     public Entity(Bounds bounds, double speedX, double speedY, double maxSpeedX, double maxSpeedY, double friction, double acceleration, double gravity, double maxFallSpeed, double jumpForce) {
 	super();
 	this.bounds = bounds;
@@ -158,6 +160,8 @@ public class Entity {
     }
     
     public void stepMovement(ArrayList<Block> map, boolean descend) {
+	
+	steps++;
 	
 	/* Desired location */
 	double goalX = speedX + this.getBounds().getX();
