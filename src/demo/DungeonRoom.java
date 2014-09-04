@@ -3,11 +3,7 @@ package demo;
 import java.awt.Color;
 import java.awt.Image;
 import java.awt.image.BufferedImage;
-import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
-
-import javax.imageio.ImageIO;
 
 import engine.Block;
 import engine.Bounds;
@@ -71,6 +67,8 @@ public class DungeonRoom {
     public int		   numVisit;
     
     public Color		 biome;
+    
+    public Image		 layout;
     
     public DungeonRoom(int roomIndex, int roomX, int roomY, int locX, int locY) {
 	this.roomLocX = locX;
@@ -169,21 +167,9 @@ public class DungeonRoom {
     public void fillImage(Image input) {
 	double doorSize = DOOR_SIZE;
 	
-	if (roomSizeX == 1 && roomSizeY == 1) {
-	    if (surroundingRooms[0].open && surroundingRooms[1].open && surroundingRooms[2].open && surroundingRooms[3].open) {
-		try {
-		    input = ImageIO.read(new File("assets/levels/1.png"));
-		} catch (IOException e) {}
-	    }
-	    if (!surroundingRooms[0].open && surroundingRooms[1].open && surroundingRooms[2].open && surroundingRooms[3].open) {
-		try {
-		    input = ImageIO.read(new File("assets/levels/2.png"));
-		} catch (IOException e) {}
-	    }
-	}
-	
 	double bottom = roomY - 1;
 	double right = roomX - 1;
+	this.layout = input;
 	if (input == null) {
 	    for (int x = 0; x < roomSizeX; x++) {
 		double roomCX = x * DEFAULT_ROOM_X;
@@ -193,8 +179,6 @@ public class DungeonRoom {
 		
 		roomMap.add(new BlockStone(new Bounds(roomCX, bottom, halfRoom - doorSize / 2, 1)));
 		roomMap.add(new BlockStone(new Bounds(roomCX + halfRoom + doorSize / 2, bottom, halfRoom - doorSize / 2, 1)));
-		
-		roomMap.add(new BlockStone(new Bounds(DEFAULT_ROOM_X / 2 - DOOR_SIZE / 2 + x * DEFAULT_ROOM_X, 5, DOOR_SIZE, 1)));
 	    }
 	    for (int y = 0; y < roomSizeY; y++) {
 		double roomCY = y * DEFAULT_ROOM_Y;
@@ -214,8 +198,11 @@ public class DungeonRoom {
 		    if (R == 0 && G == 0 && B == 0) {
 			roomMap.add(new BlockStone(new Bounds(x, y, 1, 1)));
 		    }
-		    if (R == 0 && G == 0 && B == 255) {
+		    if (R == 34 && G == 177 && B == 76) {
 			roomMap.add(new BlockPlatform(new Bounds(x, y, 1, 0.5)));
+		    }
+		    if (R == 255 && G == 0 && B == 0) {
+			roomMap.add(new BlockSpike(new Bounds(x, y, 1, 1)));
 		    }
 		}
 	    }

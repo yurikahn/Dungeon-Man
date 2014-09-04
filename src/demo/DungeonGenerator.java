@@ -1,9 +1,15 @@
 package demo;
 
 import java.awt.Color;
+import java.awt.Image;
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.Queue;
+
+import javax.imageio.ImageIO;
 
 import engine.Bounds;
 
@@ -26,6 +32,39 @@ public class DungeonGenerator {
 	}
     }
     
+    private class LayoutEntry {
+	
+	public boolean[] doors;
+	public Image     image;
+	
+	public LayoutEntry(Image image) {
+	    BufferedImage tile = (BufferedImage) image;
+	    this.image = tile.getSubimage(0, 1, DungeonRoom.DEFAULT_ROOM_X, DungeonRoom.DEFAULT_ROOM_Y);
+	    int x = 0;
+	    ArrayList<Boolean> doorList = new ArrayList<Boolean>();
+	    while (true) {
+		int RGBCode = tile.getRGB(x, 0);
+		int R = RGBCode & 0x00FF0000 / (256 * 256);
+		int G = RGBCode & 0x0000FF00 / 256;
+		int B = RGBCode & 0x000000FF;
+		if (R == 0 && G == 0 && B == 0) {
+		    doorList.add(true);
+		}
+		if (R == 255 && G == 255 && B == 255) {
+		    doorList.add(false);
+		}
+		if (R == 180 && G == 180 && B == 180) {
+		    break;
+		}
+		x++;
+	    }
+	    this.doors = new boolean[doorList.size()];
+	    for (int i = 0; i < doorList.size(); i++) {
+		doors[i] = doorList.get(i);
+	    }
+	}
+    }
+    
     private class BFSNode {
 	
 	public BFSNode(DungeonRoom room, int depth) {
@@ -37,14 +76,16 @@ public class DungeonGenerator {
 	public int	 depth;
     }
     
-    private DungeonRoom[]    dungeonMap;
+    private DungeonRoom[]	  dungeonMap;
     
-    private ArrayRoomEntry[] roomArray;
+    private ArrayRoomEntry[]       roomArray;
     
-    private int	      dungeonX;
-    private int	      dungeonY;
+    private int		    dungeonX;
+    private int		    dungeonY;
     
-    private int	      numberOfRooms;
+    private int		    numberOfRooms;
+    
+    private ArrayList<LayoutEntry> layoutList;
     
     public DungeonGenerator(int xSize, int ySize) {
 	this.dungeonX = xSize;
@@ -61,6 +102,19 @@ public class DungeonGenerator {
 	if (i < 0) { return i + limit; }
 	if (i >= limit) { return i - limit; }
 	return i;
+    }
+    
+    private void loadLayouts() {
+	BufferedImage layouts = null;
+	try {
+	    layouts = ImageIO.read(new File("assets/levels/1-1.png"));
+	} catch (IOException e) {}
+	if (layouts == null) { return; }
+	layoutList = new ArrayList<LayoutEntry>();
+	int tileHeight = DungeonRoom.DEFAULT_ROOM_Y + 1;
+	for (int y = 0; y < layouts.getHeight(null); y += tileHeight) {
+	    layoutList.add(new LayoutEntry(layouts.getSubimage(0, y, DungeonRoom.DEFAULT_ROOM_X, tileHeight)));
+	}
     }
     
     /* Populate grid (step 1) */
@@ -359,7 +413,21 @@ public class DungeonGenerator {
     
     private void decorateMap() {
 	for (int i = 0; i < dungeonMap.length; i++) {
-	    dungeonMap[i].fillImage(null);
+	    Image relate = null;
+	    if (dungeonMap[i].getRoomSizeX() == 1 && dungeonMap[i].getRoomSizeY() == 1) {
+		for (int j = 0; j < layoutList.size(); j++) {
+		    boolean fail = false;
+		    for (int k = 0; k < dungeonMap[i].surroundingRooms.length; k++) {
+			if (dungeonMap[i].surroundingRooms[k].open != layoutList.get(j).doors[dungeonMap[i].surroundingRooms[k].dir]) {
+			    fail = true;
+			}
+		    }
+		    if (!fail) {
+			relate = layoutList.get(j).image;
+		    }
+		}
+	    }
+	    dungeonMap[i].fillImage(relate);
 	}
     }
     
@@ -372,6 +440,7 @@ public class DungeonGenerator {
 	 * Dungeon generation: Grid-based multisize node graph with edge culling
 	 * proportional to distance from generator nodes
 	 */
+	loadLayouts();
 	dungeonMap = generateNodeMap(generatePseudoMap());
 	cullNodeMap();
 	decorateMap();

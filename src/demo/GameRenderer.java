@@ -13,7 +13,6 @@ import javax.imageio.ImageIO;
 
 import demo.DungeonRoom.DoorEntry;
 import engine.Block;
-import engine.Bounds;
 import engine.Wall;
 
 public class GameRenderer {
@@ -50,6 +49,7 @@ public class GameRenderer {
     private Image   magenta;
     private Image   backdrop;
     private Image[] player;
+    private Image   spike;
     
     private void loadSprites() {
 	blue = null;
@@ -80,23 +80,10 @@ public class GameRenderer {
 	try {
 	    backdrop = ImageIO.read(new File("assets/backdrop.png"));
 	} catch (IOException e) {}
-	
-	player = new Image[65];
-	Image playerSheet = null;
-	int playerHeight = 64;
-	int playerWidth = 64;
+	spike = null;
 	try {
-	    playerSheet = ImageIO.read(new File("assets/player2.png"));
+	    spike = ImageIO.read(new File("assets/spike2.png"));
 	} catch (IOException e) {}
-	if (playerSheet == null) {
-	    player = null;
-	} else {
-	    for (int i = 0; i < player.length; i++) {
-		int hoff = i / 8;
-		System.out.println(i + ", " + hoff);
-		player[i] = ((BufferedImage) playerSheet).getSubimage((i % 8) * playerWidth, playerHeight * hoff, playerWidth, playerHeight);
-	    }
-	}
     }
     
     public void render(Graphics2D g2d, EntityPlayer thePlayer, DungeonRoom[] dungeon, boolean inPlay, int currentRoomIndex, boolean mapHack) {
@@ -183,6 +170,9 @@ public class GameRenderer {
 		if (COLOR_YELLOW.equals(currentRoom.biome)) {
 		    image = yellow;
 		}
+		if (currentRoomWalls.get(i) instanceof BlockSpike) {
+		    image = spike;
+		}
 		if (image == null || currentRoomWalls.get(i) instanceof BlockPlatform) {
 		    g2d.setColor(currentRoom.biome);
 		    g2d.fillRect((int) (currentRoomWalls.get(i).getBounds().getX() * GameRenderer.PIXEL_SIZE_BLOCK) - xOffset, (int) (currentRoomWalls.get(i).getBounds().getY() * GameRenderer.PIXEL_SIZE_BLOCK) - yOffset, (int) (currentRoomWalls.get(i)
@@ -197,42 +187,9 @@ public class GameRenderer {
 		}
 	    }
 	    
+	    g2d.drawImage(dungeon[currentRoomIndex].layout, 0, 0, 240, 120, null);
 	    /* Draw Player */
-	    
-	    boolean boundBoxes = false;
-	    if (boundBoxes || player == null) {
-		g2d.setColor(COLOR_RED);
-		g2d.fillRect((int) (thePlayer.getBounds().getX() * GameRenderer.PIXEL_SIZE_BLOCK) - xOffset, (int) (thePlayer.getBounds().getY() * GameRenderer.PIXEL_SIZE_BLOCK) - yOffset,
-			(int) (GameRenderer.PIXEL_SIZE_BLOCK * (thePlayer.getBounds().getWidth())), (int) (GameRenderer.PIXEL_SIZE_BLOCK * (thePlayer.getBounds().getHeight())));
-		g2d.setColor(COLOR_YELLOW);
-		if (thePlayer.getFacing() == Game.DIR_LEFT) {
-		    g2d.fillRect((int) ((thePlayer.getBounds().getX() + thePlayer.getBounds().getWidth() - 0.2) * GameRenderer.PIXEL_SIZE_BLOCK) - xOffset, (int) (thePlayer.getBounds().getY() * GameRenderer.PIXEL_SIZE_BLOCK) - yOffset,
-			    (int) (GameRenderer.PIXEL_SIZE_BLOCK * 0.2), (int) (GameRenderer.PIXEL_SIZE_BLOCK * (thePlayer.getBounds().getHeight())));
-		} else {
-		    g2d.fillRect((int) (thePlayer.getBounds().getX() * GameRenderer.PIXEL_SIZE_BLOCK) - xOffset, (int) (thePlayer.getBounds().getY() * GameRenderer.PIXEL_SIZE_BLOCK) - yOffset, (int) (GameRenderer.PIXEL_SIZE_BLOCK * 0.2),
-			    (int) (GameRenderer.PIXEL_SIZE_BLOCK * (thePlayer.getBounds().getHeight())));
-		}
-	    }
-	    if (player != null) {
-		Bounds b = thePlayer.getBounds();
-		Image imageToRender = player[64];
-		int renderX = (int) (b.x * GameRenderer.PIXEL_SIZE_BLOCK) - xOffset - 60;
-		int renderY = (int) (b.y * GameRenderer.PIXEL_SIZE_BLOCK) - yOffset;
-		int renderWidth = 3 * GameRenderer.PIXEL_SIZE_BLOCK;
-		int renderHeight = 3 * GameRenderer.PIXEL_SIZE_BLOCK;
-		if (thePlayer.getOnGround() && thePlayer.getSpeedX() == 0) {
-		    imageToRender = player[64];
-		} else if (!thePlayer.getOnGround()) {
-		    imageToRender = player[45];
-		} else {
-		    imageToRender = player[(int) (((steps) % (8 * 5)) / 5) + 4];
-		}
-		if (thePlayer.getFacing() == Game.DIR_RIGHT) {
-		    imageToRender = getFlippedImage((BufferedImage) (imageToRender));
-		}
-		
-		g2d.drawImage(imageToRender, renderX, renderY, renderWidth, renderHeight, null);
-	    }
+	    thePlayer.render(g2d, xOffset, yOffset);
 	    
 	} else {
 	    for (int i = 0; i < dungeon.length; i++) {

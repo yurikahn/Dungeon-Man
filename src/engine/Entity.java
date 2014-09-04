@@ -1,11 +1,19 @@
 package engine;
 
+import java.awt.Graphics2D;
+import java.awt.Image;
 import java.awt.geom.Point2D;
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
+
+import javax.imageio.ImageIO;
 
 import demo.BlockPlatform;
 import demo.EntityPlayer;
 import demo.Game;
+import demo.GameRenderer;
 
 public class Entity {
     
@@ -29,7 +37,14 @@ public class Entity {
     
     private long    steps;
     
-    public Entity(Bounds bounds, double speedX, double speedY, double maxSpeedX, double maxSpeedY, double friction, double acceleration, double gravity, double maxFallSpeed, double jumpForce) {
+    private Image[] run;
+    private Image[] idle;
+    private Image[] jump;
+    
+    private Image[] currentAnimation;
+    private int     animationStep;
+    
+    public Entity(Bounds bounds, String sprites, double speedX, double speedY, double maxSpeedX, double maxSpeedY, double friction, double acceleration, double gravity, double maxFallSpeed, double jumpForce) {
 	super();
 	this.bounds = bounds;
 	this.speedX = speedX;
@@ -46,6 +61,43 @@ public class Entity {
 	this.moveThisTickY = false;
 	
 	this.facing = Game.DIR_LEFT;
+	
+	initAnimation(sprites);
+	currentAnimation = idle;
+	animationStep = 0;
+    }
+    
+    private void initAnimation(String sprites) {
+	Image[] sheet = new Image[65];
+	Image playerSheet = null;
+	int playerHeight = 64;
+	int playerWidth = 64;
+	try {
+	    playerSheet = ImageIO.read(new File(sprites));
+	} catch (IOException e) {}
+	if (playerSheet == null) {
+	    sheet = null;
+	} else {
+	    for (int i = 0; i < sheet.length; i++) {
+		int hoff = i / 8;
+		sheet[i] = ((BufferedImage) playerSheet).getSubimage((i % 8) * playerWidth, playerHeight * hoff, playerWidth, playerHeight);
+	    }
+	}
+	
+	run = loadAnimation(playerSheet, 4, 12);
+	jump = loadAnimation(playerSheet, 42, 46); // 42, 48
+	idle = loadAnimation(playerSheet, 64, 65);
+    }
+    
+    private Image[] loadAnimation(Image sheet, int start, int end) {
+	int playerHeight = 64;
+	int playerWidth = 64;
+	Image[] animation = new Image[end - start];
+	for (int i = start; i < end; i++) {
+	    int hoff = i / 8;
+	    animation[i - start] = ((BufferedImage) sheet).getSubimage((i % 8) * playerWidth, playerHeight * hoff, playerWidth, playerHeight);
+	}
+	return animation;
     }
     
     public Bounds getBounds() {
@@ -292,5 +344,49 @@ public class Entity {
     
     public void jump() {
 	speedY = -jumpForce;
+	animationStep = 0;
+	currentAnimation = jump;
+    }
+    
+    public void render(Graphics2D g2d, int xOffset, int yOffset) {
+	boolean boundBoxes = false;
+	if (boundBoxes) {
+	    g2d.setColor(GameRenderer.COLOR_RED);
+	    g2d.fillRect((int) (bounds.x * GameRenderer.PIXEL_SIZE_BLOCK) - xOffset, (int) (bounds.y * GameRenderer.PIXEL_SIZE_BLOCK) - yOffset, (int) (GameRenderer.PIXEL_SIZE_BLOCK * bounds.width), (int) (GameRenderer.PIXEL_SIZE_BLOCK * bounds.height));
+	    g2d.setColor(GameRenderer.COLOR_YELLOW);
+	    if (facing == Game.DIR_LEFT) {
+		g2d.fillRect((int) ((bounds.x + bounds.width - 0.2) * GameRenderer.PIXEL_SIZE_BLOCK) - xOffset, (int) (bounds.y * GameRenderer.PIXEL_SIZE_BLOCK) - yOffset, (int) (GameRenderer.PIXEL_SIZE_BLOCK * 0.2),
+			(int) (GameRenderer.PIXEL_SIZE_BLOCK * (bounds.height)));
+	    } else {
+		g2d.fillRect((int) (bounds.x * GameRenderer.PIXEL_SIZE_BLOCK) - xOffset, (int) (bounds.y * GameRenderer.PIXEL_SIZE_BLOCK) - yOffset, (int) (GameRenderer.PIXEL_SIZE_BLOCK * 0.2), (int) (GameRenderer.PIXEL_SIZE_BLOCK * bounds.height));
+	    }
+	}
+	animationStep++;
+	int currentStep = (animationStep / 5);
+	if (currentAnimation.equals(jump)) {
+	    currentStep = Math.min(currentStep, currentAnimation.length - 1);
+	}
+	currentStep %= currentAnimation.length;
+	Image imageToRender = currentAnimation[currentStep];
+	
+	int renderX = (int) (bounds.x * GameRenderer.PIXEL_SIZE_BLOCK) - xOffset - 60;
+	int renderY = (int) (bounds.y * GameRenderer.PIXEL_SIZE_BLOCK) - yOffset;
+	int renderWidth = 3 * GameRenderer.PIXEL_SIZE_BLOCK;
+	int renderHeight = 3 * GameRenderer.PIXEL_SIZE_BLOCK;
+	if (onGround && speedX == 0) {
+	    currentAnimation = idle;
+	} else if (!onGround) {
+	    if (!currentAnimation.equals(jump)) {
+		animationStep = 4;
+	    }
+	    currentAnimation = jump;
+	} else {
+	    currentAnimation = run;
+	}
+	if (facing == Game.DIR_RIGHT) {
+	    imageToRender = GameRenderer.getFlippedImage((BufferedImage) (imageToRender));
+	}
+	
+	g2d.drawImage(imageToRender, renderX, renderY, renderWidth, renderHeight, null);
     }
 }
